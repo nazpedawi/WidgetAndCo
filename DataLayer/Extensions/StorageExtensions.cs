@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using DataLayer.Repo.Blobs;
+using DataLayer.Repo.Queues;
 
 namespace DataLayer.Extensions
 {
@@ -20,6 +21,7 @@ namespace DataLayer.Extensions
             services.AddSingleton(typeof(ITableRepository<>), typeof(TableRepository<>));
             services.AddSingleton(_ => new BlobServiceClient(connectionString));
             services.AddSingleton<IImageStorage, BlobImageStorage>();
+            services.AddSingleton<IAzureStorageQueue>(_ => new AzureStorageQueue(connectionString, AzureStorageQueue.OrdersQueue));
 
             return services;
         }
@@ -32,6 +34,9 @@ namespace DataLayer.Extensions
             
             var blobService = services.GetRequiredService<BlobServiceClient>();
             await blobService.GetBlobContainerClient(BlobImageStorage.ContainerName).CreateIfNotExistsAsync(PublicAccessType.None);   // private container
+
+            var queue = (AzureStorageQueue)services.GetRequiredService<IAzureStorageQueue>();
+            await queue.Client.CreateIfNotExistsAsync();
         }
     }
 }
