@@ -1,0 +1,52 @@
+@host = http://localhost:5294
+
+### 1. Register a customer (Table Storage)
+# @name user
+POST {{host}}/users
+Content-Type: application/json
+
+{ "name": "Jane Jansen", "email": "jane@example.com", "address": "Dorpsstraat 1, Haarlem" }
+
+### 2. Get the customer (point lookup)
+GET {{host}}/users/{{user.response.body.$.id}}
+
+### 3. Create a product (SQL)
+# @name product
+POST {{host}}/products
+Content-Type: application/json
+
+{ "name": "Blue Widget", "description": "A very blue widget", "category": "Widgets", "price": 19.99, "stock": 100 }
+
+### 4. Get the product
+GET {{host}}/products/{{product.response.body.$.id}}
+
+### 5. Search products (uses the Category + Price index)
+GET {{host}}/products?category=Widgets&minPrice=10&maxPrice=50
+
+### 6. Add an anonymous review (Table Storage, partition = productId)
+POST {{host}}/products/{{product.response.body.$.id}}/reviews
+Content-Type: application/json
+
+{ "rating": 5, "comment": "Best widget I ever bought" }
+
+### 7. Get the newest reviews
+GET {{host}}/products/{{product.response.body.$.id}}/reviews?max=10
+
+### 8. Place an order (validated, then queued, returns 202 Accepted)
+# @name order
+POST {{host}}/orders
+Content-Type: application/json
+
+{
+  "customerId": "{{user.response.body.$.id}}",
+  "items": [ { "productId": "{{product.response.body.$.id}}", "quantity": 2 } ]
+}
+
+### 9. Validation check: should return 400
+POST {{host}}/orders
+Content-Type: application/json
+
+{ "customerId": "{{user.response.body.$.id}}", "items": [] }
+
+### 10. Get the order (404 until the ProcessOrder Function exists, see Step 7)
+GET {{host}}/orders/{{order.response.body.$.orderId}}?customerId={{user.response.body.$.id}}
