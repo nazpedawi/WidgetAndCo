@@ -4,6 +4,9 @@ using DataLayer.Repo.Tables;
 using DomainLayer.Models.Reviews;
 using DomainLayer.Models.Users;
 using Microsoft.Extensions.DependencyInjection;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using DataLayer.Repo.Blobs;
 
 namespace DataLayer.Extensions
 {
@@ -15,6 +18,8 @@ namespace DataLayer.Extensions
 
             // Open generic: ITableRepository<Review> and ITableRepository<User> both resolve automatically
             services.AddSingleton(typeof(ITableRepository<>), typeof(TableRepository<>));
+            services.AddSingleton(_ => new BlobServiceClient(connectionString));
+            services.AddSingleton<IImageStorage, BlobImageStorage>();
 
             return services;
         }
@@ -24,6 +29,9 @@ namespace DataLayer.Extensions
             var tableService = services.GetRequiredService<TableServiceClient>();
             await tableService.CreateTableIfNotExistsAsync(TableRepository<Review>.TableNameFor<Review>());
             await tableService.CreateTableIfNotExistsAsync(TableRepository<User>.TableNameFor<User>());
+            
+            var blobService = services.GetRequiredService<BlobServiceClient>();
+            await blobService.GetBlobContainerClient(BlobImageStorage.ContainerName).CreateIfNotExistsAsync(PublicAccessType.None);   // private container
         }
     }
 }
