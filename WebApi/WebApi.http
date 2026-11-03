@@ -56,3 +56,25 @@ POST http://localhost:7071/api/orders/{{user.response.body.$.id}}/{{order.respon
 
 ### 12. Order processing metric
 GET {{host}}/orders/metrics?from=2026-01-01&to=2026-12-31
+
+### 13. Upload a product image (Blob Storage)
+POST {{host}}/products/{{product.response.body.$.id}}/image
+Content-Type: multipart/form-data; boundary=WidgetBoundary
+
+--WidgetBoundary
+Content-Disposition: form-data; name="file"; filename="widget.jpg"
+Content-Type: image/jpeg
+
+< ./widget.jpg
+--WidgetBoundary--
+
+### 14. Validation check: uploading a non-image should return 400
+POST {{host}}/products/{{product.response.body.$.id}}/image
+Content-Type: multipart/form-data; boundary=WidgetBoundary
+
+--WidgetBoundary
+Content-Disposition: form-data; name="file"; filename="notes.txt"
+Content-Type: text/plain
+
+this is not an image
+--WidgetBoundary--

@@ -5,6 +5,13 @@ using DataLayer.Extensions;
 using DomainLayer.Models.Orders;
 using Microsoft.Azure.Cosmos;
 
+// "dotnet run --project Seeder -- storage" seeds SQL, Tables and the queue instead of Cosmos
+if (args.Contains("storage"))
+{
+    await StorageSeeder.RunAsync();
+    return;
+}
+
 // Local emulator only (public, well-known key) - same as appsettings.json
 const string ConnectionString =
     "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
