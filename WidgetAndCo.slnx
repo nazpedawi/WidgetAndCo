@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="ApplicationServices/ApplicationServices.csproj" />
+  <Project Path="DataLayer/DataLayer.csproj" />
+  <Project Path="DomainLayer/DomainLayer.csproj" />
+  <Project Path="Functions/Functions.csproj" />
+  <Project Path="Tests/Tests.csproj" />
+  <Project Path="WebApi/WebApi.csproj" />
+</Solution>
