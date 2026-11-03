@@ -48,5 +48,11 @@ Content-Type: application/json
 
 { "customerId": "{{user.response.body.$.id}}", "items": [] }
 
-### 10. Get the order (404 until the ProcessOrder Function exists, see Step 7)
+### 10. Get the order 
 GET {{host}}/orders/{{order.response.body.$.orderId}}?customerId={{user.response.body.$.id}}
+
+### 11. Ship the order (Azure Function, port 7071)
+POST http://localhost:7071/api/orders/{{user.response.body.$.id}}/{{order.response.body.$.orderId}}/ship
+
+### 12. Order processing metric
+GET {{host}}/orders/metrics?from=2026-01-01&to=2026-12-31
