@@ -228,7 +228,7 @@ The controllers and Functions only know MediatR. They do not know which handler 
 You need the .NET 10 SDK, Azure Functions Core Tools v4, Azurite, the Azure Cosmos DB Emulator and SQL Server LocalDB.
 
 1. Start Azurite and the Cosmos DB Emulator.
-2. Copy `Functions/local.settings.example.json` to `Functions/local.settings.json`.
+2. rename `Functions/local.settings.example.json` to `Functions/local.settings.json`.
 3. Start the Web API with `dotnet run --project WebApi`. When it starts, it creates the SQL database, the Cosmos container, the tables, the picture container and the queue. It runs on `http://localhost:5294`.
 4. In a second terminal, go to the `Functions` folder and run `dotnet run`. The Functions run on `http://localhost:7071`.
 5. Open `WebApi/WebApi.http` and send requests 1 to 18 in order. They show registering a user, products, reviews, placing and shipping an order, uploading a picture, the metric, error checks, the stock going down, and clicking twice.
