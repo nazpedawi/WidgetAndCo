@@ -15,9 +15,12 @@ namespace ApplicationServices.Commands.Handlers
         {
             var order = request.Order;
 
-            // At-least-once delivery: skip if this order was already stored
+            // At-least-once delivery
             if (await orders.GetByIdAsync(order.Id, order.CustomerId) is not null)
+            {
+                logger.LogInformation("Order {OrderId} already processed, duplicate skipped", order.Id);
                 return;
+            }
 
             try
             {
