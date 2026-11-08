@@ -58,6 +58,22 @@ namespace DataLayer.Repo.Cosmos
             return results;
         }
 
+        // Create (not upsert): returns false with 409 Conflict if the id already exists
+        protected async Task<bool> TryCreateAsync(T item, string partitionKey)
+        {
+            try
+            {
+                ItemResponse<T> response = await _container.CreateItemAsync(item, new PartitionKey(partitionKey));
+                _logger.LogInformation("Cosmos create cost {RU} RU", response.RequestCharge);
+                return true;
+            }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
+            {
+                _logger.LogInformation("Cosmos create skipped: item already exists (409 Conflict)");
+                return false;
+            }
+        }
+
         protected async Task UpsertAsync(T item, string partitionKey)
         {
             ItemResponse<T> response = await _container.UpsertItemAsync(item, new PartitionKey(partitionKey));

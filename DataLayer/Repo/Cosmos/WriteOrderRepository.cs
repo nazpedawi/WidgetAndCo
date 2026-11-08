@@ -16,5 +16,8 @@ namespace DataLayer.Repo.Cosmos
 
         // Upsert = idempotent: a queue message processed twice does not create a duplicate order
         public Task SaveAsync(Order order) => UpsertAsync(order, order.CustomerId);
+        
+        // Create = duplicate detection: a second message with the same order id gets 409 Conflict
+        public Task<bool> TryCreateAsync(Order order) => TryCreateAsync(order, order.CustomerId);
     }
 }

@@ -29,7 +29,7 @@ namespace Tests.Commands
             _users.Setup(u => u.GetAsync("cust-1", "profile"))
                   .ReturnsAsync(new User("Jane", "jane@example.com", "Street 1"));
             _products.Setup(p => p.GetByIdAsync("prod-1"))
-                     .ReturnsAsync(new Product { Id = "prod-1", Name = "Blue Widget", Category = "Widgets", Price = 19.99m });
+                     .ReturnsAsync(new Product { Id = "prod-1", Name = "Blue Widget", Category = "Widgets", Price = 19.99m, Stock = 5 });
         }
 
         [Test]
@@ -83,6 +83,39 @@ namespace Tests.Commands
         {
             Assert.ThrowsAsync<NotFoundException>(() =>
                 _handler.Handle(new PlaceOrderCommand("cust-1", [new OrderLineDto("missing", 1)]), CancellationToken.None));
+        }
+
+        [Test]
+        public async Task ClientSuppliedOrderId_IsUsed_SoDoubleSubmitGivesSameId()
+        {
+            string clientOrderId = Guid.NewGuid().ToString();
+            var command = new PlaceOrderCommand("cust-1", [new OrderLineDto("prod-1", 1)], clientOrderId);
+
+            string first = await _handler.Handle(command, CancellationToken.None);
+            string second = await _handler.Handle(command, CancellationToken.None);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(first, Is.EqualTo(clientOrderId));
+                Assert.That(second, Is.EqualTo(first));
+            });
+        }
+
+        [Test]
+        public void InvalidOrderId_ThrowsValidation()
+        {
+            Assert.ThrowsAsync<ValidationException>(() =>
+                _handler.Handle(new PlaceOrderCommand("cust-1", [new OrderLineDto("prod-1", 1)], "not-a-guid"),
+                                CancellationToken.None));
+        }
+
+        [Test]
+        public void NotEnoughStock_ThrowsValidation_AndNothingIsQueued()
+        {
+            Assert.ThrowsAsync<ValidationException>(() =>
+                _handler.Handle(new PlaceOrderCommand("cust-1", [new OrderLineDto("prod-1", 6)]), CancellationToken.None));
+
+            _queue.Verify(q => q.InsertMessageAsync(It.IsAny<Order>()), Times.Never);
         }
     }
 }

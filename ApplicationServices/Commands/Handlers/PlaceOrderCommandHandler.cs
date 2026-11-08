@@ -21,6 +21,8 @@ namespace ApplicationServices.Commands.Handlers
                 throw new ValidationException("An order needs at least one item.");
             if (request.Items.Any(i => i.Quantity <= 0))
                 throw new ValidationException("Quantity must be at least 1.");
+            if (request.OrderId is not null && !Guid.TryParse(request.OrderId, out _))
+                throw new ValidationException("OrderId must be a valid GUID.");
 
             // Customer must exist in the shared Users table
             if (await users.GetAsync(request.CustomerId, "profile") is null)
@@ -32,6 +34,9 @@ namespace ApplicationServices.Commands.Handlers
                 var product = await products.GetByIdAsync(line.ProductId)
                     ?? throw new NotFoundException($"Product '{line.ProductId}' not found.");
 
+                    if (product.Stock < line.Quantity)
+                    throw new ValidationException($"Not enough stock for '{product.Name}'.");
+
                 items.Add(new OrderItem
                 {
                     ProductId = product.Id,
@@ -42,6 +47,10 @@ namespace ApplicationServices.Commands.Handlers
             }
 
             var order = new Order(request.CustomerId, items);
+
+            // Idempotency key: a double submit with the same id is stored only once
+            if (request.OrderId is not null)
+                order.Id = request.OrderId;
 
             // Async: the API returns immediately, the Function writes to Cosmos (load levelling)
             await queue.InsertMessageAsync(order);

@@ -6,5 +6,6 @@ namespace DataLayer.Repo.Interfaces
     {
         Task<Order?> GetByIdAsync(string orderId, string customerId);
         Task SaveAsync(Order order);
+        Task<bool> TryCreateAsync(Order order);
     }
 }

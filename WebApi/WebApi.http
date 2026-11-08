@@ -78,3 +78,32 @@ Content-Type: text/plain
 
 this is not an image
 --WidgetBoundary--
+
+### 15. Stock: create a product with only 3 in stock
+# @name lowstock
+POST {{host}}/products
+Content-Type: application/json
+
+{ "name": "Limited Widget", "description": "Only a few left", "category": "Widgets", "price": 49.99, "stock": 3 }
+
+### 16. Stock: order 2 (with the Functions running, stock goes from 3 to 1)
+POST {{host}}/orders
+Content-Type: application/json
+
+{
+  "customerId": "{{user.response.body.$.id}}",
+  "items": [ { "productId": "{{lowstock.response.body.$.id}}", "quantity": 2 } ]
+}
+
+### 17. Stock: "stock" should now be 1; ordering 2 again returns 400
+GET {{host}}/products/{{lowstock.response.body.$.id}}
+
+### 18. Double submit: send TWICE, only one order is stored and stock drops once
+POST {{host}}/orders
+Content-Type: application/json
+
+{
+  "orderId": "11111111-2222-3333-4444-555555555555",
+  "customerId": "{{user.response.body.$.id}}",
+  "items": [ { "productId": "{{product.response.body.$.id}}", "quantity": 1 } ]
+}

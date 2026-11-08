@@ -23,11 +23,16 @@ namespace DomainLayer.Models.Orders
         }
 
         public void MarkProcessed() => Status = OrderStatus.Processed;
+         public void Reject() => Status = OrderStatus.Rejected;
 
         public void Ship(DateTime shippedDate)
         {
             if (Status == OrderStatus.Shipped)
                 throw new InvalidOperationException("Order is already shipped.");
+
+            if (Status == OrderStatus.Rejected)
+                throw new InvalidOperationException("A rejected order cannot be shipped.");
+                
             if (shippedDate < OrderDate)
                 throw new ArgumentException("Shipping date cannot be before the order date.");
 
