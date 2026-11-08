@@ -32,7 +32,7 @@ namespace Functions
 
             await mediator.Send(new ProcessOrderCommand(order));
 
-            logger.LogInformation("Order {OrderId} stored in Cosmos for customer {CustomerId}",
+            logger.LogInformation("Order {OrderId} handled for customer {CustomerId}",
                 order.Id, order.CustomerId);
         }
     }
